@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Electro — 크롤링 연습용 기본 상점</title>
+  <link rel="stylesheet" href="crawl-shop.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="logo" href="crawl-shop.html">Electro</a>
+        <nav class="site-nav" aria-label="주요 메뉴">
+          <a href="#main">Home</a>
+          <a href="#products">All Categories <span class="muted">(35 Results)</span></a>
+        </nav>
+        <div class="header-bags" aria-label="위시리스트 및 장바구니">
+          <section class="bag bag--wishlist" aria-labelledby="wishlist-heading">
+            <h2 id="wishlist-heading" class="bag__title">
+              <button type="button" class="bag__toggle" data-bag-toggle="wishlist" aria-expanded="false" aria-controls="wishlist-panel">
+                Wishlist
+                <span class="bag__count" id="wishlist-count" data-count-for="wishlist">0</span>
+              </button>
+            </h2>
+            <div id="wishlist-panel" class="bag__panel" data-bag-panel="wishlist" hidden>
+              <p class="bag__empty" data-empty-wishlist>위시리스트가 비어 있습니다.</p>
+              <ul class="bag__list" id="wishlist-items" data-list="wishlist"></ul>
+            </div>
+          </section>
+          <section class="bag bag--cart" aria-labelledby="cart-heading">
+            <h2 id="cart-heading" class="bag__title">
+              <button type="button" class="bag__toggle" data-bag-toggle="cart" aria-expanded="false" aria-controls="cart-panel">
+                Cart
+                <span class="bag__count" id="cart-count" data-count-for="cart">0</span>
+              </button>
+            </h2>
+            <div id="cart-panel" class="bag__panel" data-bag-panel="cart" hidden>
+              <p class="bag__empty" data-empty-cart>장바구니가 비어 있습니다.</p>
+              <ul class="bag__list" id="cart-items" data-list="cart"></ul>
+              <p class="bag__total" data-cart-total-wrap hidden>
+                합계: <strong id="cart-total-price" data-cart-total>0</strong>원
+              </p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </header>
+
+    <div class="layout" id="main">
+      <aside class="sidebar" aria-label="필터">
+        <div class="sidebar__block">
+          <h3 class="sidebar__heading">Categories</h3>
+          <ul class="filter-list">
+            <li><a href="#" data-filter-cat="노트북">노트북 <span class="count">(10)</span></a></li>
+            <li><a href="#" data-filter-cat="데스크탑">데스크탑 <span class="count">(10)</span></a></li>
+            <li><a href="#" data-filter-cat="휴대폰">휴대폰 <span class="count">(10)</span></a></li>
+            <li><a href="#" data-filter-cat="모니터">모니터 <span class="count">(5)</span></a></li>
+            <li><a href="#" data-filter-cat="카메라">카메라 <span class="count">(128)</span></a></li>
+            <li><a href="#" data-filter-cat="악세사리">악세사리 <span class="count">(740)</span></a></li>
+          </ul>
+        </div>
+        <div class="sidebar__block">
+          <h3 class="sidebar__heading">Price</h3>
+          <div class="price-dummy" aria-hidden="true">
+            <span class="qty-btn">+</span>
+            <span class="qty-btn">−</span>
+          </div>
+        </div>
+        <div class="sidebar__block">
+          <h3 class="sidebar__heading">Brand</h3>
+          <ul class="filter-list filter-list--compact">
+            <li><a href="#" data-filter-brand="SAMSUNG">SAMSUNG <span class="count">(578)</span></a></li>
+            <li><a href="#" data-filter-brand="LG">LG <span class="count">(125)</span></a></li>
+            <li><a href="#" data-filter-brand="HP">HP <span class="count">(755)</span></a></li>
+            <li><a href="#" data-filter-brand="DELL">DELL <span class="count">(578)</span></a></li>
+            <li><a href="#" data-filter-brand="ASUS">ASUS <span class="count">(125)</span></a></li>
+            <li><a href="#" data-filter-brand="SONY">SONY <span class="count">(755)</span></a></li>
+            <li><a href="#" data-filter-brand="LENOVO">LENOVO <span class="count">(200)</span></a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <main class="main" id="products">
+        <div class="toolbar">
+          <label>
+            Sort By:
+            <select id="sort-select" name="sort">
+              <option value="popular">Popular</option>
+              <option value="price-asc">Price ↑</option>
+              <option value="price-desc">Price ↓</option>
+            </select>
+          </label>
+          <label>
+            Show:
+            <select id="page-size" name="pageSize">
+              <option value="10" selected>10</option>
+              <option value="20">20</option>
+            </select>
+          </label>
+          <button type="button" class="link-btn" id="filter-reset">필터 초기화</button>
+        </div>
+
+        <div class="product-grid" id="product-grid" data-product-container></div>
+
+        <p class="pager" id="pager-info" aria-live="polite">Showing 1 page</p>
+
+        <footer class="newsletter">
+          <h3>Sign Up for the NEWSLETTER</h3>
+          <form class="newsletter__form" action="#" method="get" onsubmit="return false;">
+            <input type="email" name="email" placeholder="email@example.com" autocomplete="email" />
+            <button type="submit">Subscribe</button>
+          </form>
+        </footer>
+      </main>
+    </div>
+  </div>
+
+  <script src="crawl-shop.js" defer></script>
+</body>
+</html>
