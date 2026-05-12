@@ -1,460 +1,278 @@
 /**
- * 크롤링 연습용 정적 상점 — 위시리스트 / 장바구니 (localStorage)
+ * Electro basic practice
+ * - Keeps template classes, no external JS deps
+ * - Wishlist / Cart stored in localStorage
  */
 
-const STORAGE_WISH = "crawlShopWishlist";
-const STORAGE_CART = "crawlShopCart";
-
-const PRODUCTS = [
-  {
-    id: "p1",
-    sku: "SFG16-71-77FT",
-    title: "에이서 스위프트 GO 16 OLED, 스틸 그레이, 코어i7, 512GB, 16GB, WIN11 Home, SFG16-71-77FT",
-    price: 1419000,
-    oldPrice: null,
-    category: "노트북",
-    brand: "ASUS",
-    reviews: 16,
-    hot: true,
-    salePct: null,
-  },
-  {
-    id: "p2",
-    sku: "NT550XDA-K24AT",
-    title: "삼성전자 노트북 플러스2 15.6, 퓨어 화이트, NT550XDA-K24AT, 펜티엄, 256GB, 8GB, WIN11 Pro",
-    price: 549000,
-    oldPrice: null,
-    category: "노트북",
-    brand: "SAMSUNG",
-    reviews: 405,
-    hot: true,
-    salePct: null,
-  },
-  {
-    id: "p3",
-    sku: "82VG002EKR",
-    title: "레노버 아이디어패드 슬림 1 15AMN7 15.6, 256GB, Free DOS, 82VG002EKR, 라이젠3, Cloud Grey, 8GB",
-    price: 529000,
-    oldPrice: null,
-    category: "노트북",
-    brand: "LENOVO",
-    reviews: 903,
-    hot: false,
-    salePct: null,
-  },
-  {
-    id: "p4",
-    sku: "82YU0009KR",
-    title: "레노버 V15 G4 AMN 15.6, Arctic Grey, 라이젠3, 256GB, 8GB, WIN11 Home, 82YU0009KR",
-    price: 624000,
-    oldPrice: 649000,
-    category: "노트북",
-    brand: "LENOVO",
-    reviews: 1,
-    hot: true,
-    salePct: 3,
-  },
-  {
-    id: "p5",
-    sku: "16U70R-GA56K",
-    title: "LG 울트라PC 엣지 16, 차콜 그레이, 라이젠5, 256GB, 16GB, WIN11 Home, 16U70R-GA56K",
-    price: 1135000,
-    oldPrice: null,
-    category: "노트북",
-    brand: "LG",
-    reviews: 155,
-    hot: true,
-    salePct: null,
-  },
-  {
-    id: "p6",
-    sku: "BB1422SS",
-    title: "베이직스 베이직북 14 3세대, BB1422SS, 256GB, White, WIN11 Pro, 셀러론, 8GB",
-    price: 398000,
-    oldPrice: null,
-    category: "노트북",
-    brand: "ASUS",
-    reviews: 1541,
-    hot: true,
-    salePct: null,
-  },
-  {
-    id: "p7",
-    sku: "82XD002XKR",
-    title: "레노버 아이디어패드 슬림 5i 14IRL 14, Cloud Grey, 코어i5, 512GB, 16GB, Free DOS, 82XD002XKR",
-    price: 899000,
-    oldPrice: 1099000,
-    category: "노트북",
-    brand: "LENOVO",
-    reviews: 106,
-    hot: false,
-    salePct: 18,
-  },
-  {
-    id: "p8",
-    sku: "82XF001RKR",
-    title: "레노버 아이디어패드 슬림 5 16IRL 16, Cloud Grey, 512GB, 16GB, Free DOS, 82XF001RKR",
-    price: 929000,
-    oldPrice: null,
-    category: "노트북",
-    brand: "LENOVO",
-    reviews: 118,
-    hot: false,
-    salePct: null,
-  },
-  {
-    id: "p9",
-    sku: "SFG16-71-51BY",
-    title: "에이서 스위프트 GO 16 OLED, 스틸 그레이, 코어i5, 512GB, 16GB, Free DOS, SFG16-71-51BY",
-    price: 1008000,
-    oldPrice: null,
-    category: "노트북",
-    brand: "ASUS",
-    reviews: 16,
-    hot: false,
-    salePct: null,
-  },
-  {
-    id: "p10",
-    sku: "NT550XED-K78AS",
-    title: "삼성전자 갤럭시북 2 15.6, 500GB, 실버, NT550XED-K78AS, 코어i7, 16GB, WIN11 Home",
-    price: 1149000,
-    oldPrice: null,
-    category: "노트북",
-    brand: "SAMSUNG",
-    reviews: 687,
-    hot: true,
-    salePct: null,
-  },
-];
-
-function formatWon(n) {
-  return n.toLocaleString("ko-KR");
-}
+const LS_WISHLIST = "electroBasicWishlist";
+const LS_CART = "electroBasicCart";
 
 function loadJson(key, fallback) {
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return fallback;
-    return JSON.parse(raw);
-  } catch {
-    return fallback;
-  }
+	try {
+		const v = localStorage.getItem(key);
+		if (!v) return fallback;
+		return JSON.parse(v);
+	} catch {
+		return fallback;
+	}
 }
 
 function saveJson(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
+	localStorage.setItem(key, JSON.stringify(value));
 }
 
-let wishlistIds = new Set(loadJson(STORAGE_WISH, []));
-let cartMap = new Map(loadJson(STORAGE_CART, []).map((e) => [e.id, e.qty]));
-
-let filterCategory = null;
-let filterBrand = null;
-
-const grid = document.getElementById("product-grid");
-const sortSelect = document.getElementById("sort-select");
-const pagerInfo = document.getElementById("pager-info");
-const filterReset = document.getElementById("filter-reset");
-
-function persist() {
-  saveJson(STORAGE_WISH, [...wishlistIds]);
-  saveJson(
-    STORAGE_CART,
-    [...cartMap.entries()].map(([id, qty]) => ({ id, qty }))
-  );
-}
-
-function productById(id) {
-  return PRODUCTS.find((p) => p.id === id);
-}
-
-function cartItemCount() {
-  let n = 0;
-  cartMap.forEach((q) => {
-    n += q;
-  });
-  return n;
-}
-
-function cartTotal() {
-  let sum = 0;
-  cartMap.forEach((qty, id) => {
-    const p = productById(id);
-    if (p) sum += p.price * qty;
-  });
-  return sum;
-}
-
-function updateCounts() {
-  const w = document.getElementById("wishlist-count");
-  const c = document.getElementById("cart-count");
-  if (w) w.textContent = String(wishlistIds.size);
-  if (c) c.textContent = String(cartItemCount());
-}
-
-function renderBagPanels() {
-  const wishUl = document.querySelector('[data-list="wishlist"]');
-  const cartUl = document.querySelector('[data-list="cart"]');
-  const emptyWish = document.querySelector("[data-empty-wishlist]");
-  const emptyCart = document.querySelector("[data-empty-cart]");
-  const totalWrap = document.querySelector("[data-cart-total-wrap]");
-  const totalEl = document.getElementById("cart-total-price");
-
-  const wishItems = [...wishlistIds].map(productById).filter(Boolean);
-  if (wishUl) {
-    wishUl.innerHTML = wishItems
-      .map(
-        (p) => `<li data-line-wish="${p.id}">
-          <span class="name">${escapeHtml(p.title)}</span>
-          <button type="button" data-remove-wish="${p.id}">삭제</button>
-        </li>`
-      )
-      .join("");
-  }
-  if (emptyWish) emptyWish.hidden = wishItems.length > 0;
-
-  const cartLines = [...cartMap.entries()]
-    .map(([id, qty]) => ({ p: productById(id), qty }))
-    .filter((x) => x.p);
-  if (cartUl) {
-    cartUl.innerHTML = cartLines
-      .map(
-        ({ p, qty }) => `<li data-line-cart="${p.id}">
-          <span class="name">${escapeHtml(p.title)}</span>
-          <span class="meta">${qty}×</span>
-          <button type="button" data-remove-cart="${p.id}">삭제</button>
-        </li>`
-      )
-      .join("");
-  }
-  if (emptyCart) emptyCart.hidden = cartLines.length > 0;
-
-  const total = cartTotal();
-  if (totalWrap && totalEl) {
-    totalWrap.hidden = cartLines.length === 0;
-    totalEl.textContent = formatWon(total);
-  }
-
-  document.querySelectorAll(".btn-wishlist").forEach((btn) => {
-    const id = btn.getAttribute("data-add-wishlist");
-    if (id && wishlistIds.has(id)) btn.classList.add("is-in-wishlist");
-    else btn.classList.remove("is-in-wishlist");
-  });
+function formatWon(n) {
+	return Number(n).toLocaleString("ko-KR");
 }
 
 function escapeHtml(str) {
-  const div = document.createElement("div");
-  div.textContent = str;
-  return div.innerHTML;
+	const div = document.createElement("div");
+	div.textContent = String(str ?? "");
+	return div.innerHTML;
 }
 
-function filteredProducts() {
-  return PRODUCTS.filter((p) => {
-    if (filterCategory && p.category !== filterCategory) return false;
-    if (filterBrand && p.brand !== filterBrand) return false;
-    return true;
-  });
+function getProductElFromTarget(target) {
+	return target?.closest?.(".product") ?? null;
 }
 
-function sortedProducts(list) {
-  const mode = sortSelect ? sortSelect.value : "popular";
-  const copy = [...list];
-  if (mode === "price-asc") copy.sort((a, b) => a.price - b.price);
-  else if (mode === "price-desc") copy.sort((a, b) => b.price - a.price);
-  else copy.sort((a, b) => b.reviews - a.reviews);
-  return copy;
+function getProductData(productEl) {
+	const id = productEl.getAttribute("data-product-id") || "";
+	const sku = productEl.getAttribute("data-sku") || "";
+	const category = productEl.getAttribute("data-category") || "";
+	const brand = productEl.getAttribute("data-brand") || "";
+	const price = Number(productEl.getAttribute("data-price") || 0);
+	const oldPrice = productEl.getAttribute("data-old-price");
+	const img = productEl.querySelector(".product-img img")?.getAttribute("src") || "";
+	const name = productEl.querySelector(".product-name a")?.textContent?.trim() || "";
+	return {
+		id,
+		sku,
+		category,
+		brand,
+		price,
+		oldPrice: oldPrice == null ? null : Number(oldPrice),
+		img,
+		name,
+	};
 }
 
-function renderGrid() {
-  const list = sortedProducts(filteredProducts());
-  if (list.length === 0) {
-    grid.innerHTML =
-      '<p class="empty-grid" role="status">조건에 맞는 상품이 없습니다. 필터를 초기화해 보세요.</p>';
-    if (pagerInfo) pagerInfo.textContent = "Showing 0 items";
-    return;
-  }
+let wishlist = new Set(loadJson(LS_WISHLIST, []));
+let cart = new Map(loadJson(LS_CART, []).map((x) => [x.id, x.qty]));
 
-  grid.innerHTML = list
-    .map((p) => {
-      const badges = [];
-      if (p.salePct) badges.push(`<span class="badge badge--sale">-${p.salePct}%</span>`);
-      if (p.hot) badges.push(`<span class="badge badge--hot">HOT</span>`);
-      const old =
-        p.oldPrice != null
-          ? `<span class="old">${formatWon(p.oldPrice)}원</span>`
-          : "";
-      const inWish = wishlistIds.has(p.id);
-      return `<article class="product-card" data-product-id="${p.id}" data-sku="${escapeHtml(
-        p.sku
-      )}" data-category="${escapeHtml(p.category)}" data-brand="${escapeHtml(p.brand)}" data-price="${
-        p.price
-      }">
-        <div class="product-card__thumb" data-role="thumb-placeholder">
-          ${badges.length ? `<div class="product-card__badges">${badges.join("")}</div>` : ""}
-          IMAGE
-        </div>
-        <div class="product-card__body">
-          <p class="product-card__cat">${escapeHtml(p.category)}</p>
-          <h3 class="product-card__title">
-            <a href="#product-${p.id}" id="product-${p.id}">${escapeHtml(p.title)}</a>
-          </h3>
-          <p class="product-card__price">${formatWon(p.price)}원 ${old}</p>
-          <p class="product-card__reviews">(${p.reviews})</p>
-          <div class="product-card__actions">
-            <button type="button" class="btn-wishlist${inWish ? " is-in-wishlist" : ""}" data-add-wishlist="${
-        p.id
-      }">add to wishlist</button>
-            <a href="#" data-quick-view="${p.id}">quick view</a>
-            <button type="button" data-add-cart="${p.id}">add to cart</button>
-          </div>
-        </div>
-      </article>`;
-    })
-    .join("");
-
-  if (pagerInfo) {
-    pagerInfo.textContent = `Showing 1 page · ${list.length} items`;
-  }
-  renderBagPanels();
+function persist() {
+	saveJson(LS_WISHLIST, [...wishlist]);
+	saveJson(
+		LS_CART,
+		[...cart.entries()].map(([id, qty]) => ({ id, qty }))
+	);
 }
 
-function toggleWishlist(id) {
-  if (wishlistIds.has(id)) wishlistIds.delete(id);
-  else wishlistIds.add(id);
-  persist();
-  updateCounts();
-  renderGrid();
+function cartCount() {
+	let sum = 0;
+	for (const qty of cart.values()) sum += qty;
+	return sum;
 }
 
-function addToCart(id) {
-  const prev = cartMap.get(id) || 0;
-  cartMap.set(id, prev + 1);
-  persist();
-  updateCounts();
-  renderBagPanels();
+function cartTotal() {
+	let total = 0;
+	document.querySelectorAll(".product[data-product-id]").forEach((pEl) => {
+		const id = pEl.getAttribute("data-product-id");
+		if (!id) return;
+		const qty = cart.get(id);
+		if (!qty) return;
+		const price = Number(pEl.getAttribute("data-price") || 0);
+		total += price * qty;
+	});
+	return total;
 }
 
-function removeWish(id) {
-  wishlistIds.delete(id);
-  persist();
-  updateCounts();
-  renderGrid();
+function updateHeaderQty() {
+	const wQty = document.querySelector("[data-wishlist-qty]");
+	const cQty = document.querySelector("[data-cart-qty]");
+	if (wQty) wQty.textContent = String(wishlist.size);
+	if (cQty) cQty.textContent = String(cartCount());
 }
 
-function removeCartLine(id) {
-  cartMap.delete(id);
-  persist();
-  updateCounts();
-  renderGrid();
+function renderPanels() {
+	const wishlistList = document.querySelector("[data-wishlist-list]");
+	const cartList = document.querySelector("[data-cart-list]");
+	const wishEmpty = document.querySelector("[data-wishlist-empty]");
+	const cartEmpty = document.querySelector("[data-cart-empty]");
+	const cartTotalEl = document.querySelector("[data-cart-total]");
+
+	const productById = new Map();
+	document.querySelectorAll(".product[data-product-id]").forEach((pEl) => {
+		const d = getProductData(pEl);
+		productById.set(d.id, d);
+	});
+
+	if (wishlistList) {
+		const items = [...wishlist].map((id) => productById.get(id)).filter(Boolean);
+		wishlistList.innerHTML = items
+			.map(
+				(p) => `<div class="cart-item" data-wish-line="${escapeHtml(p.id)}">
+					<img src="${escapeHtml(p.img)}" alt="">
+					<div>
+						<div class="name">${escapeHtml(p.name)}</div>
+						<div class="meta">${escapeHtml(p.sku)}</div>
+					</div>
+					<button class="remove" type="button" data-remove-wish="${escapeHtml(p.id)}">삭제</button>
+				</div>`
+			)
+			.join("");
+		if (wishEmpty) wishEmpty.hidden = items.length > 0;
+	}
+
+	if (cartList) {
+		const lines = [...cart.entries()]
+			.map(([id, qty]) => {
+				const p = productById.get(id);
+				if (!p) return null;
+				return { p, qty };
+			})
+			.filter(Boolean);
+		cartList.innerHTML = lines
+			.map(
+				({ p, qty }) => `<div class="cart-item" data-cart-line="${escapeHtml(p.id)}">
+					<img src="${escapeHtml(p.img)}" alt="">
+					<div>
+						<div class="name">${escapeHtml(p.name)}</div>
+						<div class="meta">${qty}× · ${formatWon(p.price)}원</div>
+					</div>
+					<button class="remove" type="button" data-remove-cart="${escapeHtml(p.id)}">삭제</button>
+				</div>`
+			)
+			.join("");
+		if (cartEmpty) cartEmpty.hidden = lines.length > 0;
+	}
+
+	if (cartTotalEl) cartTotalEl.textContent = formatWon(cartTotal());
+
+	// reflect wishlist button state
+	document.querySelectorAll(".add-to-wishlist").forEach((btn) => {
+		const pEl = getProductElFromTarget(btn);
+		if (!pEl) return;
+		const id = pEl.getAttribute("data-product-id");
+		btn.classList.toggle("is-active", !!id && wishlist.has(id));
+	});
 }
 
-function setFilterLinkActive() {
-  document.querySelectorAll("[data-filter-cat]").forEach((a) => {
-    const v = a.getAttribute("data-filter-cat");
-    a.classList.toggle("is-active", filterCategory === v);
-  });
-  document.querySelectorAll("[data-filter-brand]").forEach((a) => {
-    const v = a.getAttribute("data-filter-brand");
-    a.classList.toggle("is-active", filterBrand === v);
-  });
+function closeAllPanels() {
+	document.querySelectorAll(".dropdown-menu[data-panel]").forEach((el) => {
+		el.hidden = true;
+	});
+	document.querySelectorAll("[data-panel-toggle]").forEach((a) => {
+		a.setAttribute("aria-expanded", "false");
+	});
+}
+
+function togglePanel(which) {
+	const panel = document.querySelector(`.dropdown-menu[data-panel="${which}"]`);
+	const toggle = document.querySelector(`[data-panel-toggle="${which}"]`);
+	if (!panel || !toggle) return;
+
+	const isOpen = !panel.hidden;
+	closeAllPanels();
+	if (!isOpen) {
+		panel.hidden = false;
+		toggle.setAttribute("aria-expanded", "true");
+	}
 }
 
 document.addEventListener("click", (e) => {
-  const wishBtn = e.target.closest("[data-add-wishlist]");
-  if (wishBtn) {
-    e.preventDefault();
-    toggleWishlist(wishBtn.getAttribute("data-add-wishlist"));
-    return;
-  }
-  const cartBtn = e.target.closest("[data-add-cart]");
-  if (cartBtn) {
-    e.preventDefault();
-    addToCart(cartBtn.getAttribute("data-add-cart"));
-    return;
-  }
-  const rmWish = e.target.closest("[data-remove-wish]");
-  if (rmWish) {
-    e.preventDefault();
-    removeWish(rmWish.getAttribute("data-remove-wish"));
-    return;
-  }
-  const rmCart = e.target.closest("[data-remove-cart]");
-  if (rmCart) {
-    e.preventDefault();
-    removeCartLine(rmCart.getAttribute("data-remove-cart"));
-    return;
-  }
-  const qv = e.target.closest("[data-quick-view]");
-  if (qv) {
-    e.preventDefault();
-    const id = qv.getAttribute("data-quick-view");
-    const p = productById(id);
-    if (p) window.alert(`[quick view]\n${p.title}\n${formatWon(p.price)}원`);
-    return;
-  }
+	const toggle = e.target.closest("[data-panel-toggle]");
+	if (toggle) {
+		e.preventDefault();
+		togglePanel(toggle.getAttribute("data-panel-toggle"));
+		return;
+	}
 
-  const toggle = e.target.closest("[data-bag-toggle]");
-  if (toggle) {
-    const which = toggle.getAttribute("data-bag-toggle");
-    const panel = document.querySelector(`[data-bag-panel="${which}"]`);
-    const expanded = toggle.getAttribute("aria-expanded") === "true";
-    document.querySelectorAll("[data-bag-toggle]").forEach((t) => {
-      const w = t.getAttribute("data-bag-toggle");
-      const p = document.querySelector(`[data-bag-panel="${w}"]`);
-      t.setAttribute("aria-expanded", "false");
-      if (p) p.hidden = true;
-    });
-    if (!expanded && panel) {
-      toggle.setAttribute("aria-expanded", "true");
-      panel.hidden = false;
-    }
-    return;
-  }
+	const removeWish = e.target.closest("[data-remove-wish]");
+	if (removeWish) {
+		e.preventDefault();
+		const id = removeWish.getAttribute("data-remove-wish");
+		if (id) wishlist.delete(id);
+		persist();
+		updateHeaderQty();
+		renderPanels();
+		return;
+	}
 
-  if (!e.target.closest(".bag")) {
-    document.querySelectorAll("[data-bag-toggle]").forEach((t) => {
-      const w = t.getAttribute("data-bag-toggle");
-      const p = document.querySelector(`[data-bag-panel="${w}"]`);
-      t.setAttribute("aria-expanded", "false");
-      if (p) p.hidden = true;
-    });
-  }
+	const removeCart = e.target.closest("[data-remove-cart]");
+	if (removeCart) {
+		e.preventDefault();
+		const id = removeCart.getAttribute("data-remove-cart");
+		if (id) cart.delete(id);
+		persist();
+		updateHeaderQty();
+		renderPanels();
+		return;
+	}
+
+	const wishBtn = e.target.closest(".add-to-wishlist");
+	if (wishBtn) {
+		e.preventDefault();
+		const pEl = getProductElFromTarget(wishBtn);
+		if (!pEl) return;
+		const id = pEl.getAttribute("data-product-id");
+		if (!id) return;
+		if (wishlist.has(id)) wishlist.delete(id);
+		else wishlist.add(id);
+		persist();
+		updateHeaderQty();
+		renderPanels();
+		return;
+	}
+
+	const cartBtn = e.target.closest(".add-to-cart-btn");
+	if (cartBtn) {
+		e.preventDefault();
+		const pEl = getProductElFromTarget(cartBtn);
+		if (!pEl) return;
+		const id = pEl.getAttribute("data-product-id");
+		if (!id) return;
+		cart.set(id, (cart.get(id) || 0) + 1);
+		persist();
+		updateHeaderQty();
+		renderPanels();
+		return;
+	}
+
+	const quickView = e.target.closest(".quick-view");
+	if (quickView) {
+		e.preventDefault();
+		const pEl = getProductElFromTarget(quickView);
+		if (!pEl) return;
+		const d = getProductData(pEl);
+		window.alert(`[quick view]\n${d.name}\n${formatWon(d.price)}원\nSKU: ${d.sku}`);
+		return;
+	}
+
+	// click outside dropdown closes panels
+	if (!e.target.closest(".dropdown")) {
+		closeAllPanels();
+	}
 });
 
-document.querySelectorAll("[data-filter-cat]").forEach((a) => {
-  a.addEventListener("click", (e) => {
-    e.preventDefault();
-    const v = a.getAttribute("data-filter-cat");
-    filterCategory = filterCategory === v ? null : v;
-    setFilterLinkActive();
-    renderGrid();
-  });
+document.getElementById("sortBy")?.addEventListener("change", (e) => {
+	const mode = e.target.value;
+	const container = document.getElementById("product-container");
+	if (!container) return;
+	const cards = [...container.querySelectorAll(":scope > .col-md-4")];
+	const getPrice = (col) => Number(col.querySelector(".product")?.getAttribute("data-price") || 0);
+	const getPopular = (col) => {
+		const txt = col.querySelector(".sub_cnt")?.textContent || "";
+		const m = txt.match(/\((\d+)\)/);
+		return m ? Number(m[1]) : 0;
+	};
+
+	if (mode === "price-asc") cards.sort((a, b) => getPrice(a) - getPrice(b));
+	else if (mode === "price-desc") cards.sort((a, b) => getPrice(b) - getPrice(a));
+	else cards.sort((a, b) => getPopular(b) - getPopular(a));
+
+	cards.forEach((c) => container.appendChild(c));
 });
 
-document.querySelectorAll("[data-filter-brand]").forEach((a) => {
-  a.addEventListener("click", (e) => {
-    e.preventDefault();
-    const v = a.getAttribute("data-filter-brand");
-    filterBrand = filterBrand === v ? null : v;
-    setFilterLinkActive();
-    renderGrid();
-  });
-});
+updateHeaderQty();
+renderPanels();
 
-if (filterReset) {
-  filterReset.addEventListener("click", () => {
-    filterCategory = null;
-    filterBrand = null;
-    setFilterLinkActive();
-    renderGrid();
-  });
-}
-
-if (sortSelect) {
-  sortSelect.addEventListener("change", () => renderGrid());
-}
-
-updateCounts();
-setFilterLinkActive();
-renderGrid();
